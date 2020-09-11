@@ -253,3 +253,244 @@ void bfs(int x, int y){
 ```
 idea는 simple하다.   
 주어진 맵을 시작점으로부터 떨어진 거리로 바꿔가면서 탐색하면 최소거리를 구할 수 있다.   
+
+## Shortest-path
+
+**Dijkstra algorithm**
+
++ 정의
+> graph에서 여러 개의 노드가 있을 때, 특정한 노드에서 출발하여 다른 노드로 가는 각각의 최단 경로를 구해주는 알고리즘
+
++ 분류
+> greedy의 일좀
+
++ 제약사항
+> 음의 가중치가 존재할 때 비정상 동작 가능
+
++ process
+
+```
+1. 출발노드를 설정
+
+2. 최단 거리 테이블(각 노드에 대한 현재까지의 최단 거리) 초기화
+
+3. 방문하지 않은 노드 중에서 최단 거리가 가장 짧은 노드를 선택한다.(Greedy approach)
+
+4. 해당 노드를 거쳐 다른 노드로 가는 비용을 계산하여 최단 거리 테이블을 갱신
+
+5. 위 과정에서 3, 4단게를 반복한다.
+
+```
+
++ 특징
+`한 단계당 하나의 노드에 대한 최단 거리를 확실히 찾는 것`
+
++ 구현방식
+> 2가지 방법이 있다.
+
+1. 순차탐색 + 갱신
+
++ 시간복잡도 O(N^2)
+
+2. 힙 탐색 + 갱신
+
++ 시간복잡도 O(NlogN)
+
+> Heap
+
+<table>
+    <thead>
+        <th>우선순위 큐 구현 방식</th>
+        <th>삽입 시간</th>
+        <th>삭제 시간</th>
+    </thead>
+    <tbody>
+        <tr>
+            <td> 리스트 </td>
+            <td> O(1) </td>
+            <td> O(N) </td>
+        </tr>
+        <tr>
+            <td> 힙 </td>
+            <td> O(logN) </td>
+            <td> O(logN) </td>
+        </tr>
+    </tbody>
+</table>
+
+Heap은 priority queue를 사용한다.   
+최소값을 뽑아내야 하므로 최소 힙을 사용해야 한다.   
+언어별로 힙 구현이 제각각이기 때문에 만약 최대 힙 기반으로 priority queue가 구현되어 있다면, 값을 *-1을 하는 방식을 통해 최소 힙으로 변경할 수 있다.   
+다익스트라는 음수 가중치가 존재할 시 cycle이 발생할 수 있기 때문에, 힙에서만 음수를 사용하고 뽑은 후에 다시 * -1을 하여 원래대로 되돌려 놓는다.   
+
+## 코드
+
+> dijkstra algorithm
+
++ heap 미사용 코드
+
+```cpp
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+#define INF 1e9
+
+int n, m; // 노드, 간선 개수
+int start; // 시작 노드
+
+vector<bool>visited(100); // 노드가 100개 이하라고 가정함
+vector<int>dist(100, INF);
+vector<pair<int, int>>graph[100];
+
+int get_smallest_node() {
+    int min_value = INF;
+    int index = 0;
+    for (int i = 1; i <= n; ++i) {
+        if (dist[i] < min_value && !visited[i]) {
+            min_value = dist[i];
+            index = i; // 현 노드와 가장 가까운 노드
+        }
+    }
+    return index;
+}
+
+void dijkstra(int start) {
+  
+    dist[start] = 0;
+    visited[start] = true;
+    for (pair<int, int> edge : graph[start]) {
+        dist[edge.first] = edge.second; // first로 가는 거리 second, direct path로 갱신
+    }
+    for (int i = 0; i < n - 1; ++i) {
+        int now = get_smallest_node();
+        visited[now] = true;
+        for (pair<int, int> edge : graph[now]) {
+            int cost = dist[now] + edge.second; // 현재저장된 now까지의 거리(현재 선택된 노드) + 선택된 노드와 다른 노드들과의 거리를 본다.
+            cost < dist[edge.first] ? dist[edge.first] = cost : dist[edge.first] = dist[edge.first];
+        }
+    }
+}
+
+int main() {
+    cin >> n >> m;
+    cin >> start;
+    for (int i = 0; i < m; ++i) {
+        int from, to, cost;
+        cin >> from >> to >> cost;
+        graph[from].push_back(make_pair(to, cost));
+    }
+
+    dijkstra(start);
+
+    for (int i = 1; i <= n; ++i) {
+        if (dist[i] == INF) cout << "INFINITY\n";
+        else cout << dist[i] << '\n';
+    }
+}
+```
++ heap 사용 코드
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <queue>
+
+using namespace std;
+
+#define INF 1e9
+
+int n, m; // 노드, 간선 개수
+int start; // 시작 노드
+
+vector<bool>visited(100); // 노드가 100개 이하라고 가정함
+vector<int>dist(100, INF);
+vector<pair<int, int>>graph[100];
+
+void dijkstra(int start) {
+    priority_queue<pair<int, int>> pq;
+    pq.push(make_pair(0, start));
+    dist[start] = 0;
+    while (!pq.empty()) {
+        int d = pq.top().first;
+        int now = pq.top().second;
+        pq.pop();
+        if (dist[now] < d) continue; // 이미 처리된 노드면 무시
+        for (pair<int, int> edge : graph[now]) {
+            int cost = d + edge.second;
+            if (cost < dist[edge.first]) {
+                dist[edge.first] = cost;
+                pq.push(make_pair(cost, edge.first));
+            }
+        }
+    }
+}
+
+int main() {
+    cin >> n >> m;
+    cin >> start;
+    for (int i = 0; i < m; ++i) {
+        int from, to, cost;
+        cin >> from >> to >> cost;
+        graph[from].push_back(make_pair(to, cost));
+    }
+
+    dijkstra(start);
+
+    for (int i = 1; i <= n; ++i) {
+        if (dist[i] == INF) cout << "INFINITY\n";
+        else cout << dist[i] << '\n';
+    }
+}
+```
+
+> Floyd - whasher algorithm
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+#define INF 1e9
+
+int n, m; // 노드, 간선 개수
+
+vector<vector<int>>graph(100, vector<int>(100, INF)); // 2차원 인접행렬
+
+int main() {
+
+    cin >> n >> m;
+
+    for (int i = 0; i < m; ++i) {
+        int from, to, cost;
+        cin >> from >> to >> cost;
+        graph[from][to] = cost;
+    }
+
+    for (int i = 1; i <= n; ++i) {
+        for (int j = 1; j <= n; ++j) {
+            if (i == j) graph[i][j] = 0; // 자기 자신에서 자기 자신으로 가는 비용은 0
+        }
+    }
+
+    // floyd-whasher
+    for (int k = 1; k <= n; ++k) {
+        for (int i = 1; i <= n; ++i) {
+            for (int j = 1; j <= n; ++j) {
+                graph[i][j] = min(graph[i][j], graph[i][k] + graph[k][j]);
+            }
+        }
+    }
+
+    for (int i = 1; i <= n; ++i) {
+        for (int j = 1; j <= n; ++j) {
+            if (graph[i][j] == INF) cout << "INFINITY\n";
+            else cout << graph[i][j] << ' ';
+        }
+        cout << '\n';
+    }
+}
+```

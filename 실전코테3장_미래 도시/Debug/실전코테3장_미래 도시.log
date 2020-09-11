@@ -1,0 +1,7 @@
+﻿  미래 도시.cpp
+D:\git\Problem-Solving\Shortest-path\shortest_path\실전코테3장_미래 도시\미래 도시.cpp(11,48): warning C4244: '인수': 'double'에서 'const _Ty'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+          with
+          [
+              _Ty=int
+          ]
+  실전코테3장_미래 도시.vcxproj -> D:\git\Problem-Solving\Shortest-path\shortest_path\Debug\실전코테3장_미래 도시.exe
