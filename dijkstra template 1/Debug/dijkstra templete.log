@@ -1,0 +1,8 @@
+﻿  dijkstra.cpp
+D:\git\Problem-Solving\Shortest-path\shortest_path\dijkstra templete\dijkstra.cpp(12,22): warning C4244: '인수': 'double'에서 'const _Ty'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+          with
+          [
+              _Ty=int
+          ]
+D:\git\Problem-Solving\Shortest-path\shortest_path\dijkstra templete\dijkstra.cpp(16,19): warning C4244: '초기화 중': 'double'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  dijkstra templete.vcxproj -> D:\git\Problem-Solving\Shortest-path\shortest_path\Debug\dijkstra templete.exe

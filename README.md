@@ -323,7 +323,7 @@ Heap은 priority queue를 사용한다.
 언어별로 힙 구현이 제각각이기 때문에 만약 최대 힙 기반으로 priority queue가 구현되어 있다면, 값을 *-1을 하는 방식을 통해 최소 힙으로 변경할 수 있다.   
 다익스트라는 음수 가중치가 존재할 시 cycle이 발생할 수 있기 때문에, 힙에서만 음수를 사용하고 뽑은 후에 다시 * -1을 하여 원래대로 되돌려 놓는다.   
 
-## 코드
+**코드**
 
 > dijkstra algorithm
 
@@ -445,6 +445,35 @@ int main() {
 }
 ```
 
+**Floyd - whasher 알고리즘**
+
+`모든 지점에서 다른 모든 지점까지의 최단 경로를 모두 구해야하는 경우`
+
++ 시간복잡도
+  O(N^3)
+
++ 특징
+  1. 이차원 리스트에 최단거리 정보를 저장
+  2. 다이나믹 프로그래밍을 이용
+     - 최단거리를 메모이제이션한다 
+     - 다시 계산하지 않는다 
+     - 문제가 중복된다 
+     - 긴 경로의 정답에 작은 경로의 정답이 포함된다
+
++ 알고리즘
+
+  1. A에서 B로 가는 경로를 확인한다.
+  2. 초기화 되어있는 경로보다 다른 노드를 거쳐가면 더 최단경로가 되는 경우 갱신한다.
+
++ 문제유형
+`어디를 거쳐서 가야하는 최단경로`
+
+```cpp
+// a에서 출발해, k를 거쳐서 b로가는 것 vs 현재 상태에서 a에서 b로 가는 최단경로
+fy[a][b] = min(fy[a][b],fy[a][k] + fy[k][b]);
+```
+
+**코드**
 > Floyd - whasher algorithm
 
 ```cpp
@@ -492,5 +521,237 @@ int main() {
         }
         cout << '\n';
     }
+}
+```
+
+## Graph Theory
+
+`연결되어있다` => 곧바로 그래프 알고리즘 상기
+
++ 서로소 집합
+
+> 공통 원소가 없는 두 집합
+
+**Union & find**
+
+`서로소집합 자료구조`
+
++ 연산 
+  + find: 부모를 찾는 연산, 즉 둘이 서로소 집합인지 아닌지 판별
+  + union: 서로소 집합 두개를 합치는 연산
+
++ 시간복잡도
+  - 노드가 v개이고, 최대 v-1개의 연산과(루트 제외 모든 노드 한번씩 합친다), m번의 find연산을 할 때
+  - O(v + mlog2-m/v(v))
+
++ 활용
+  - 무방향 그래프에서 사이클 판별
+  - 루트 노드가 다르다면 두 노드에 대해 union연산을 수행
+  - 루트 노드가 서로 같다면 cycle이 발생(루트가 같은데 또 합치려고 하는 것이므로)
+  - 방향그래프에서 사이클 판별은 dfs로 가능하다.
+
++ 코드
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+// 경로 압축 기법이 포함된 find 연산
+int find_(vector<int>& parent,int x) {
+    if (parent[x] != x) { // 루트가 아니라면,
+        parent[x] = find_(parent, parent[x]); // 재귀적으로 부모 찾기
+    }
+    return parent[x];
+    // return x;를 하게될 경우, 경로 압축 기법 미사용 코드 루트가 아닌 애들은 자기자신의 곧바로 있는 부모노드로 연결
+}
+
+void union_(vector<int>& parent, int a, int b) {
+    a = find_(parent, a);
+    b = find_(parent, b);
+    a < b ? parent[b] = a : parent[a] = b;
+}
+
+int main() {
+    int v, e;
+    cin >> v >> e; // 노드와 간선의 개수입력
+    vector<int> parent(v + 1, 0);
+    for (int i = 1; i <= v; ++i) {
+        parent[i] = i; // 부모를 자기자신으로 초기화
+    }
+    for (int i = 0; i < e; ++i) {
+        int a, b;
+        cin >> a >> b;
+        union_(parent,a, b);
+    }
+    // 각 원소가 속한 집합의 루트
+    for (int i = 1; i <= v; ++i) {
+        cout << find_(parent,i) << ' ';
+    }
+    cout << '\n';
+    // 부모 테이블
+    for (int i = 1; i <= v; ++i) {
+        cout << parent[i] << ' ';
+    }
+    cout << '\n';
+    return 0;
+}
+```
+
+**kruskal algorithm**
+
++ 신장 트리
+  `하나의 그래프가 있을 때 모든 노드를 포함하면서 사이클이 존재하지 않는 부분 그래프`
+
++ 응용
+  `모든 도시를 연결할 때 최소의 비용으로 연결하고 싶다`
+
++ 특징
+  + 그리디 알고리즘
+  + 가장 짧은 것부터 고른다.
+  + 트리는 간선의 개수가 노드의 개수-1개 이다.
+
++ 알고리즘
+  1. edge를 비용에 따라 오름차순으로 정렬
+  2. 간선을 하나씩 확인하며 사이클을 발생시키는지 확인
+   - 발생하면 트리에 넣지말고, 발생하지 않으면 넣는다.
+  3. 모든 간선에 대해 2번의 과정을 반복한다.
+
++ 시간 복잡도
+  - 간선의 개수 e 
+  - O(eloge), 정렬이 필요하기 때문
+
++ 코드
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+typedef struct edge {
+    int cost;
+    int from;
+    int to;
+}edge;
+// 경로 압축 기법이 포함된 find 연산
+int find_(vector<int>& parent, int x) {
+    if (parent[x] != x) { // 루트가 아니라면,
+        parent[x] = find_(parent, parent[x]); // 재귀적으로 부모 찾기
+    }
+    return parent[x];
+    // return x;를 하게될 경우, 경로 압축 기법 미사용 코드 루트가 아닌 애들은 자기자신의 곧바로 있는 부모노드로 연결
+}
+
+void union_(vector<int>& parent, int a, int b) {
+    a = find_(parent, a);
+    b = find_(parent, b);
+    a < b ? parent[b] = a : parent[a] = b;
+}
+
+int main() {
+    int v, e;
+    cin >> v >> e; // 노드와 간선의 개수입력
+    vector<int> parent(v + 1, 0);
+    for (int i = 1; i <= v; ++i) {
+        parent[i] = i; // 부모를 자기자신으로 초기화
+    }
+    vector<edge> edges;
+    for (int i = 0; i < e; ++i) {
+        int cost, from, to;
+        cin >> from >> to >> cost;
+        edges.push_back({ cost, from, to });
+    }
+    int result = 0;
+    sort(edges.begin(), edges.end(), [](edge a, edge b) {
+        return a.cost < b.cost;
+    });
+    for (edge e : edges) {
+        int cost = e.cost;
+        int from = e.from;
+        int to = e.to;
+        if (find_(parent, from) != find_(parent, to)) { // cycle 체크
+            union_(parent, from, to);
+            result += cost;
+        }
+    }
+    cout << result << '\n';
+    return 0;
+}
+```
+
+**topology sort**
+
+`일련의 작업을 차례대로 수행해야 할 때 사용한다`
+
++ 정의
+
+> 방향 그래프의 모든 노드를 방향성에 거스르지 않도록 순서대로 나열하는 것
+
++ 알고리즘
+  1. 진입차수가 0인 노드를 큐에 삽입한다.
+  2. 큐가 빌 때까지 다음의 과정을 반복한다.
+     1. 큐에서 원소를 꺼내 해당 노드에서 출발하는 간선을 그래프에서 제거
+     2. 새롭게 진입차수가 0이 된 노드를 큐에 넣는다.
+
++ 특징
+  + 모든 원소를 방문하기 전 큐가 빈다면 사이클이 존재한다.
+  + 사이클이 존재하는 경우 어떠한 원소도 큐에 들어가지 못하기 때문
+  + 한 단계에서 큐에 새롭게 들어가는 원소가 2개 이상인 경우가 있다면, 답은 여러개 존재한다.
+
++ 시간복잡도
+  + 노드의 개수 v, 간선의 개수 e 일 때,
+  + O(v + e) 
+
++ 코드
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <queue>
+
+using namespace std;
+
+int v, e;
+vector<int> indegree(101);
+vector<int> adj_list[101];
+vector<int> result;
+
+void topology_sort() {
+	queue<int> q;
+	for (int i = 1; i <=v; ++i) {
+		if (!indegree[i]) {
+			q.push(i);
+		}
+	}
+	while (!q.empty()) {
+		int now = q.front(); q.pop();
+		result.push_back(now);
+		for (int next : adj_list[now]) {
+			indegree[next] -= 1;
+			if (!indegree[next]) {
+				q.push(v);
+			}
+		}
+	}
+}
+
+int main() {
+	cin >> v >> e;
+	for (int i = 0; i < e; ++i) {
+		int from, to;
+		cin >> from >> to;
+		adj_list[from].push_back(to);
+		indegree[to] += 1;
+	}
+	topology_sort();
+	for (int i : result) {
+		cout << i << ' ';
+	}
+	cout << '\n';
+	return 0;
 }
 ```
