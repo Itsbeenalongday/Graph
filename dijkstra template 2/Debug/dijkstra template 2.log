@@ -1,0 +1,8 @@
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(459,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (dijkstra templete 2.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  dijkstra.cpp
+D:\git\Problem-Solving\Graph\dijkstra template 2\dijkstra.cpp(13,22): warning C4244: '인수': 'double'에서 'const _Ty'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+          with
+          [
+              _Ty=int
+          ]
+  dijkstra template 2.vcxproj -> D:\git\Problem-Solving\Graph\Debug\dijkstra template 2.exe
